@@ -1,0 +1,66 @@
+version: "3"
+services:
+  postgres:
+    image: library/postgres:13
+    container_name: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+
+# TODO добавить сервисы
+
+  ticket:
+    build: ./source_v1/TicketService/
+    ports:
+      - "8070:8070"
+    restart: on-failure
+    volumes:
+      - ./source_v1/TicketService/:/TicketService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8070"
+
+  flight:
+    build: ./source_v1/FlightService/
+    ports:
+      - "8060:8060"
+    restart: on-failure
+    volumes:
+      - ./source_v1/FlightService/:/FlightService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py loaddata ./init_data.json
+      && python manage.py runserver 0.0.0.0:8060"
+
+  bonus:
+    build: ./source_v1/BonusService/
+    ports:
+      - "8050:8050"
+    restart: on-failure
+    volumes:
+      - ./source_v1/BonusService/:/BonusService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py loaddata ./init_data.json
+      && python manage.py runserver 0.0.0.0:8050"
+
+  gateway:
+    build: ./source_v1/GatewayService/
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    volumes:
+      - ./source_v1/GatewayService/:/GatewayService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8080"
+
+volumes:
+  db-data:

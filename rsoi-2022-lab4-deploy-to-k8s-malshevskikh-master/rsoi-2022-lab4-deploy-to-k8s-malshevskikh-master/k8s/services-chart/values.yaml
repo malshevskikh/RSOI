@@ -1,0 +1,31 @@
+bonus:
+  service:
+    port: 8050
+    image:
+      name: maximalsh/bonus
+      version: "latest"
+    database:
+      url: "jdbc:postgresql://postgres:5432/privileges"
+flight:
+  service:
+    port: 8060
+    image:
+      name: maximalsh/flight
+      version: "latest"
+    database: 
+      url: "jdbc:postgresql://postgres:5432/flights"
+ticket:
+  service:
+    port: 8070
+    image:
+      name: maximalsh/ticket
+      version: "latest"
+    database: 
+      url: "jdbc:postgresql://postgres:5432/tickets"
+gateway:
+  service:
+    port: 8080
+    image:
+      name: maximalsh/gateway
+      version: "latest"
+    isGateway: true

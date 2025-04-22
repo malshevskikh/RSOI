@@ -1,0 +1,11 @@
+[
+{
+  "model": "myBonus.PrivilegeModel",
+  "pk": 1,
+  "fields": {
+    "username": "Test Max",
+    "status": "GOLD",
+    "balance": 5000
+  }
+}
+]

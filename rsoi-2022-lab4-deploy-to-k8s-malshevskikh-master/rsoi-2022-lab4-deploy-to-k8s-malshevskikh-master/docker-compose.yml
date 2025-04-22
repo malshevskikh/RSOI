@@ -1,0 +1,57 @@
+version: "3"
+services:
+
+# TODO добавить сервисы
+
+  ticket:
+    image: maximalsh/ticket
+    build: ./source_v1/TicketService/
+    ports:
+      - "8070:8070"
+    restart: on-failure
+    volumes:
+      - ./source_v1/TicketService/:/TicketService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8070"
+
+  flight:
+    image: maximalsh/flight
+    build: ./source_v1/FlightService/
+    ports:
+      - "8060:8060"
+    restart: on-failure
+    volumes:
+      - ./source_v1/FlightService/:/FlightService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py loaddata ./init_data.json
+      && python manage.py runserver 0.0.0.0:8060"
+
+  bonus:
+    image: maximalsh/bonus
+    build: ./source_v1/BonusService/
+    ports:
+      - "8050:8050"
+    restart: on-failure
+    volumes:
+      - ./source_v1/BonusService/:/BonusService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py loaddata ./init_data.json
+      && python manage.py runserver 0.0.0.0:8050"
+
+  gateway:
+    image: maximalsh/gateway
+    build: ./source_v1/GatewayService/
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    volumes:
+      - ./source_v1/GatewayService/:/GatewayService/
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8080"
+
+volumes:
+  db-data:

@@ -1,0 +1,70 @@
+name: GitHub Classroom Workflow
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    name: Autograding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: docker/setup-buildx-action@v2
+
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+
+      - name: Build images
+        timeout-minutes: 10
+        run: docker compose build
+
+      - name: Docker Push
+        run: docker-compose push
+
+      - name: Install Kubectl
+        uses: Azure/setup-kubectl@v3.1
+
+      - name: Create .kube folder
+        run: mkdir $HOME/.kube
+
+      - name: Send YC config to K8S
+        run: cp ./k8s/config $HOME/.kube/config
+
+      - name: Delete old Database pods
+        run: helm delete db1
+
+      - name: Delete old Service pods
+        run: helm delete serv1
+
+      - name: Deploy DB to YC
+        run: helm install db1 k8s/db-chart
+
+      - name: Deploy Services to YC
+        run: helm install serv1 k8s/services-chart
+
+      - name: Wait 60 seconds
+        run: sleep 60
+
+      - name: Run API Tests
+        uses: matt-ball/newman-action@master
+        with:
+          collection: v1/postman/collection.json
+          environment: v1/postman/environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
+
+      - uses: education/autograding@v1
+        id: autograder
+        continue-on-error: true
+
+      - name: Github auto grader mark
+        uses: Romanow/google-sheet-autograder-marker@v1.0
+        with:
+          google_token: ${{secrets.GOOGLE_API_KEY}}
+          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
+          homework_number: 4
+          user_column: 'D'
+          column_offset: 'F'
+          mark: "'+"
